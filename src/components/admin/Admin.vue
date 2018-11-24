@@ -30,8 +30,6 @@
 </template>
 
 <script>
-import axios from "axios";
-
 export default {
   data() {
     return {
@@ -39,10 +37,6 @@ export default {
     };
   },
   created() {
-    axios.get("/security", {withCredentials: true})
-      .then(res => console.log(res))
-      .catch(error => console.error(error));
-
     this.selectedUrl = this.$route.path;
   },
   methods: {

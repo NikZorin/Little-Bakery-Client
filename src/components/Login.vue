@@ -3,11 +3,15 @@
     <div class="form">
       <h2>Little Bakery</h2>
 
+      <div class="error" v-show="error">
+        {{ error }}
+      </div>
+
       <form class="creds" id="loginform" name="loginform" @submit="handleLogin">
         <label>Username</label>
-        <input id="username" type="text" v-model="username"/>
+        <input id="username" type="text" v-model="username" :class="{ 'wrong': error }"/>
         <label>Password</label>
-        <input id="password" type="password" v-model="password"/>
+        <input id="password" type="password" v-model="password" :class="{ 'wrong': error }"/>
 
         <input class="submit" type="submit" value="Login"/>
 
@@ -23,22 +27,34 @@ export default {
   data() {
     return {
       username: "",
-      password: ""
+      password: "",
+      error: ""
     };
   },
   methods: {
     handleLogin(e) {
       e.preventDefault();
-      if (this.password.length > 0) {
-        var data = 'username=' + this.username + '&password=' + this.password;
-        axios
-          .post("/login", data, {withCredentials: true})
-          .then(response => {
-            this.$router.push("/admin");
+      if (this.password.length > 0 && this.username.length > 0) {
+        var username = this.username;
+        var password = this.password;
+
+        const reqestOption = {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ username, password })
+        };
+
+        return fetch("http://localhost:8080/login", reqestOption)
+          .then(response => response.json())
+          .then(data => {
+            localStorage.token = data.token;
+            this.$router.push('/admin');
           })
-          .catch(function(error) {
-            console.error(error.response);
+          .catch(e => {
+            this.error = 'Wrong login or password';
           });
+      } else {
+        this.error = 'Fill username and password';
       }
     }
   }
@@ -48,7 +64,7 @@ export default {
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped>
 .container {
-  height: 100%;
+  height: 100vh;
   display: flex;
   justify-content: center;
   align-items: center;
@@ -114,5 +130,21 @@ h2 {
   background-color: rgb(138, 66, 66);
   color: #fff;
   cursor: pointer;
+}
+
+.error {
+  background: rgba(255, 60, 60, 0.3);
+  border: 2px solid rgba(253, 100, 100, 0.6);
+  color: #fff;
+  padding: 7px 10px;
+  box-sizing: border-box;
+  font-size: 18px;
+  width: 100%;
+  margin-bottom: 10px;
+  text-align: center;
+}
+
+input.wrong {
+  border: 1px solid red;
 }
 </style>

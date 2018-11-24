@@ -20,30 +20,11 @@
 </template>
 
 <script>
-import axios from "axios";
-
 export default {
   data() {
     return {
       cakes: []
     };
-  },
-  beforeCreate() {
-    axios
-      .get("/posts")
-      .then(response => {
-        var result = response.data;
-        result.forEach(element => {
-          element["isChanging"] = false;
-          element["titleSaved"] = "";
-          element["contentSaved"] = "";
-        });
-
-        return result;
-      })
-      .then(cakes => {
-        this.cakes = cakes;
-      });
   },
   methods: {
     addCake() {
@@ -51,25 +32,9 @@ export default {
         title: "Title",
         content: "Content"
       };
-      axios
-        .post("/posts", newCake)
-        .then(response => {
-          var result = response.data;
-          result["isChanging"] = false;
-          result["titleSaved"] = "";
-          result["contentSaved"] = "";
-          return result;
-        })
-        .then(added => {
-          this.cakes.unshift(added);
-        });
     },
     save(cake) {
       cake.isChanging = false;
-      axios.post("/posts", cake).then(response => {
-        cake.title = response.data.title;
-        cake.content = response.data.content;
-      });
     },
     undo(cake) {
       cake.title = cake.titleSaved;
@@ -84,15 +49,7 @@ export default {
       cake.isChanging = true;
     },
     remove(cake) {
-      axios
-        .delete("/posts", { data: cake })
-        .then(response => {
-          for (var i = 0; i < this.cakes.length; i++) {
-            if (this.cakes[i].id === post.id) {
-              this.cakes.splice(i, 1);
-            }
-          }
-        });
+      
     }
   }
 };

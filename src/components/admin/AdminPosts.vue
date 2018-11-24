@@ -23,17 +23,25 @@
 import axios from "axios";
 
 export default {
-    data() {
+  data() {
     return {
       posts: [],
       isChanging: false
     };
   },
   beforeCreate() {
-    axios
-      .get("/posts")
+    fetch("http://localhost:8080/private/posts", {
+      method: "GET",
+      headers: new Headers({
+        "Authorization": localStorage.token,
+        "Content-Type": "application/json"
+      })
+    })
       .then(response => {
-        var result = response.data;
+        return response.json();
+      })
+      .then(data => {
+        var result = data;
         result.forEach(element => {
           element["isChanging"] = false;
           element["titleSaved"] = "";
@@ -52,25 +60,43 @@ export default {
         title: "Title",
         content: "Content"
       };
-      axios
-        .post("/posts", newPost)
-        .then(response => {
-          var result = response.data;
-          result["isChanging"] = false;
-          result["titleSaved"] = "";
-          result["contentSaved"] = "";
-          return result;
-        })
-        .then(added => {
-          this.posts.unshift(added);
-        });
+
+      fetch("http://localhost:8080/posts", {
+        method: "POST",
+        headers: new Headers({
+          "Authorization": localStorage.token,
+          "Content-Type": "application/json"
+        }),
+        body: JSON.stringify(newPost)
+      })
+      .then(response => response.json())
+      .then(data => {
+        var result = data;
+        result["isChanging"] = false;
+        result["titleSaved"] = "";
+        result["contentSaved"] = "";
+        return result;
+      })
+      .then(added => {
+        this.posts.unshift(added);
+      });
     },
     save(post) {
       post.isChanging = false;
-      axios.post("/posts", post).then(response => {
-        post.title = response.data.title;
-        post.content = response.data.content;
-      });
+
+      fetch("http://localhost:8080/posts", {
+        method: "PUT",
+        headers: new Headers({
+          "Authorization": localStorage.token,
+          "Content-Type": "application/json"
+        }),
+        body: JSON.stringify(post)
+      })
+      .then(response => response.json())
+      .then(data => {
+        post.title = data.title;
+        post.content = data.content;
+      })
     },
     undo(post) {
       post.title = post.titleSaved;
@@ -85,22 +111,27 @@ export default {
       post.isChanging = true;
     },
     remove(post) {
-      axios
-        .delete("/posts", { data: post })
-        .then(response => {
-          for (var i = 0; i < this.posts.length; i++) {
-            if (this.posts[i].id === post.id) {
-              this.posts.splice(i, 1);
-            }
+      fetch("http://localhost:8080/posts", {
+        method: "DELETE",
+        headers: new Headers({
+          "Authorization": localStorage.token,
+          "Content-Type": "application/json"
+        }),
+        body: JSON.stringify(post)
+      })
+      .then(response => {
+        for (var i = 0; i < this.posts.length; i++) {
+          if (this.posts[i].id === post.id) {
+            this.posts.splice(i, 1);
           }
-        });
+        }
+      })
     }
   }
 };
 </script>
 
 <style scoped>
-
 #header {
   display: block;
   font-size: 40px;
@@ -167,5 +198,4 @@ textarea {
   font-weight: 400;
   margin-bottom: 5px;
 }
-
 </style>

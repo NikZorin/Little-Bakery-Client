@@ -26,6 +26,13 @@ let router = new Router({
       path: '/admin',
       name: 'admin',
       component: Admin,
+      beforeEnter (to, from, next) {
+        if (localStorage.token) {
+          next();
+        } else {
+          next('/login');
+        }
+      },
       children: [
         {
           path: '',
