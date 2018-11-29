@@ -11,26 +11,30 @@
         <!-- End Logo container-->
       
         <div id="navigation">
-          <ul class="navigation-menu nav">
-            <li class="active">
-              <a href="#home" data-scroll="true">Главная</a>
+          <ul>
+            <li>
+              <a href="#home" class="navBtn" data-scroll="true">Главная</a>
             </li>
-            <li class="">
-              <a href="#about" data-scroll="true">Каталог</a>
+            <li class="dropdown">
+              <a data-scroll="true" class="navBtn dropdown-btn">Каталог</a>
+              <div class="dropdown-content">
+                <a v-for="photo in photos" :href="'#' + photo.id">{{ photo.category }}</a>
+              </div>
             </li>
-            <li class="">
-              <a href="#gallery" data-scroll="true">Конструктор</a>
+            <li>
+              <a href="#gallery" class="navBtn" data-scroll="true">Конструктор</a>
             </li>
-            <li class="">
-              <a href="#team" data-scroll="true">Прайс</a>
+            <li>
+              <a href="#team" class="navBtn" data-scroll="true">Прайс</a>
             </li>
-            <li class=""><a href="#works" data-scroll="true">Отзывы</a>
+            <li>
+              <a href="#works" class="navBtn" data-scroll="true">Отзывы</a>
             </li>
-            <li class="last-elements">
-              <a href="#testimonials" data-scroll="true">Блог</a>
+            <li>
+              <a href="#testimonials" class="navBtn" data-scroll="true">Блог</a>
             </li>
-            <li class="last-elements">
-              <a href="#contact" data-scroll="true">Контакты</a>
+            <li>
+              <a href="#contact" class="navBtn" data-scroll="true">Контакты</a>
             </li>
         </ul>
       </div>
@@ -38,15 +42,19 @@
     </header>
 
     <section id="slide">
-      <div id="home-slider">
-          <div class="slide-image" :style="{ backgroundImage: 'url(' + slideImage + ')' }"></div>
+      <div>
+        <transition name="fade" mode="out-in">
+          <div class="home-slider" v-for="(slide,index) in slides" v-if="index == slideIndex" :key="index">
+            <div class="slide-image" :style="{ backgroundImage: 'url(' + getImage(slide.image) + ')' }"></div>
 
-          <div class="slide-wrap">
-            <div class="slide-content">
-                <h1 class="upper" style="opacity: 1; transform: translateY(0px);">{{ slide.title }}</h1>
-                <h5 style="opacity: 1; transform: translateY(0px);">{{ slide.text }}</h5>
+            <div class="slide-wrap">
+              <div class="slide-content">
+                  <h1 class="upper">{{ slide.title }}</h1>
+                  <h5>{{ slide.text }}</h5>
+              </div>
             </div>
           </div>
+        </transition>
     </div>
     </section>
 
@@ -125,6 +133,7 @@
     </section>
 
     <section id="constructor">
+      <div class="constrOverlay"></div>
       <div class="constrContainer">
         <div class="constructorButton">
           Конструктор торта
@@ -229,46 +238,55 @@ export default {
       ],
       photos: [
         {
+          id: 'cat1',
           category: 'Категория 1',
           image: 'photo1.jpg',
           cells: 3
         },
         {
+          id: 'cat2',
           category: 'Категория 2',
           image: 'photo2.jpg',
           cells: 2
         },
         {
+          id: 'cat3',
           category: 'Категория 3',
           image: 'photo3.jpg',
           cells: 1
         },
         {
+          id: 'cat4',
           category: 'Категория 4',
           image: 'photo4.jpg',
           cells: 1
         },
         {
+          id: 'cat5',
           category: 'Категория 5',
           image: 'photo5.jpg',
           cells: 1
         },
         {
+          id: 'cat6',
           category: 'Категория 6',
           image: 'photo6.jpg',
           cells: 1
         },
         {
+          id: 'cat7',
           category: 'Категория 7',
           image: 'photo7.jpg',
           cells: 1
         },
         {
+          id: 'cat8',
           category: 'Категория 8',
           image: 'photo7.jpg',
           cells: 2
         },
         {
+          id: 'cat9',
           category: 'Категория 9',
           image: 'photo7.jpg',
           cells: 3
@@ -307,12 +325,6 @@ export default {
     };
   },
   computed: {
-    slideImage() {
-      return require("../assets/" + this.slide.image);
-    },
-    slide() {
-      return this.slides[this.slideIndex];
-    },
     selectedFeedback() {
       return this.feedbacks[this.feedbackIndex];
     },
@@ -346,13 +358,13 @@ export default {
   },
   created() {
     window.addEventListener('scroll', this.handleScroll);
-    // setInterval(() => {
-    //   if(this.slideIndex < this.slides.length - 1) {
-    //     this.slideIndex++;
-    //   } else {
-    //     this.slideIndex = 0;
-    //   }
-    // }, 10000);
+    setInterval(() => {
+      if(this.slideIndex < this.slides.length - 1) {
+        this.slideIndex++;
+      } else {
+        this.slideIndex = 0;
+      }
+    }, 30000);
   },
   destroyed() {
     window.removeEventListener('scroll', this.handleScroll);
@@ -379,6 +391,32 @@ export default {
 
 .slidel-leave-active {
   animation: slide-out-left 0.5s ease-in forwards;
+}
+
+.fade-enter-active {
+  animation: fade-in 1s ease-out forwards;
+}
+
+.fade-leave-active {
+  animation: fade-out 1s ease-in forwards;
+}
+
+@keyframes fade-out {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }
 
 @keyframes slide-in-right {
@@ -470,7 +508,7 @@ p {
 }
 
 #nav.stick.dark-menu {
-  background: #000;
+  background: #333;
   box-shadow: 0 5px 10px -7px rgba(0, 0, 0, 0.8);
 }
 
@@ -495,10 +533,68 @@ li {
   display: inline-block;
   margin: 0 10px;
 }
-#navigation a {
+.navBtn {
   color: #fff;
   text-decoration: none;
   padding: 0 5px;
+}
+
+.dropdown {
+    position: relative;
+    display: inline-block;
+    cursor: pointer;
+}
+
+.dropdown-content {
+    display: none;
+    position: absolute;
+    background-color: #333;
+    width: 300%;
+    left: -100%;
+    border-radius: 5px;
+    box-shadow: 0 0 5px #333;
+}
+
+.dropdown:hover .dropdown-content {
+  display: block;
+}
+
+.stick .dropdown-content {
+  background-color: rgb(255, 255, 255);
+}
+
+.dropdown-content a {
+    color: #fff;
+    padding: 12px 16px;
+    text-decoration: none;
+    padding: 10px 5px;
+    display: block;
+}
+
+.stick .dropdown-content a {
+  color: #333;
+}
+
+.dropdown-content a:hover {
+  background-color: rgb(255, 244, 255);
+  color: #333;
+  border-radius: 5px;
+}
+
+.stick .dropdown-content a:hover {
+  background-color: #333;
+  color: rgb(255, 200, 255);
+  border-radius: 5px;
+}
+
+.navBtn:hover,
+.dropdown:hover .navBtn.dropdown-btn {
+  color: #333;
+}
+
+.stick .navBtn:hover,
+.stick .dropdown:hover .navBtn.dropdown-btn {
+  color: rgb(255, 200, 255);
 }
 
 #slide {
@@ -508,7 +604,7 @@ li {
   background: #222225;
 }
 
-#home-slider {
+.home-slider {
   height: 100vh;
 }
 
@@ -607,6 +703,10 @@ li {
   border: 2px solid #fff;
   overflow: hidden;
   position: relative;
+}
+
+.photo img {
+  transition: .5s all ease-out;
 }
 
 .photo:hover img {
@@ -710,13 +810,24 @@ li {
 
 #constructor {
   position: relative;
-  background: rgba(255, 222, 255, 0.35);
+  background: url('../assets/constBackground.jpg') no-repeat center;
+  background-attachment: fixed;
   padding-top: 150px;
   padding-bottom: 150px;
 }
 
+.constrOverlay {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  top: 0;
+  left: 0;
+  background: rgba(173, 173, 173, 0.3);
+}
+
 .constrContainer {
   display: inline-block;
+  position: relative;
   width: 100%;
   background-position: center;
   background-size: cover;
@@ -887,7 +998,7 @@ textarea {
   font-size: 30px;
   padding: 0 40px;
   border: 1px solid #bbb;
-  border-radius: 20px;
+  border-radius: 15px;
   background-color: rgb(255, 226, 255);
   cursor: pointer;
 }
@@ -902,7 +1013,7 @@ textarea {
 
 footer {
   position: relative;
-  background: rgb(51, 51, 51);
+  background: #333;
   padding-top: 25px;
   padding-bottom: 25px;
 }
