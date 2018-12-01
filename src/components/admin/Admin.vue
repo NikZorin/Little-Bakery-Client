@@ -111,6 +111,7 @@ export default {
   height: 40px;
   overflow: hidden;
   visibility: hidden;
+  color: #fff;
 }
 
 #navigation:hover #navTitle {
@@ -147,6 +148,7 @@ export default {
 }
 
 #navContent li {
+  display: block;
   font-size: 20px;
   padding: 10px 30px 10px 10px;
   text-align: right;

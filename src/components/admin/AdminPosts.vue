@@ -4,11 +4,27 @@
     <div class="button add" @click="addPost()">Add Post</div>
     <ul>
       <li v-for="post in posts" class="post" :key="post.id">
-        <div class="label">Title</div>
-        <input v-model="post.title" :disabled="!post.isChanging"/>
+        <div class="label">Image</div>
+        <div class="imagePreview" v-if="post.image">
+          <img :src="post.image.fileDownloadUri" alt="">
+        </div>
+        <label class="file-select">
+        <!-- We can't use a normal button element here, as it would become the target of the label. -->
+          <div class="select-button">
+          <!-- Display the filename if a file has been selected. -->
+            <div v-if="post.image">
+              <span >
+                Selected File: {{ post.image.fileName }}
+              </span>
+            </div>
+            <span v-else>Select File</span>
+          </div>
+          <!-- Now, the file input that we hide. -->
+          <input :disabled="!post.isChanging" type="file" @change="onFileSelected(post, $event)"/>
+        </label>
 
-        <div class="label">Content</div>
-        <textarea v-model="post.content" rows="8" :disabled="!post.isChanging"/>
+        <div class="label">Text</div>
+        <textarea v-model="post.text" rows="8" :disabled="!post.isChanging"/>
 
         <div class="button" v-show="post.isChanging" @click="save(post)">Save <i class="fas fa-save"/></div>
         <div class="button" v-show="post.isChanging" @click="undo(post)">Undo <i class="fas fa-undo"/></div>
@@ -33,7 +49,7 @@ export default {
     fetch("http://localhost:8080/private/posts", {
       method: "GET",
       headers: new Headers({
-        "Authorization": localStorage.token,
+        Authorization: localStorage.token,
         "Content-Type": "application/json"
       })
     })
@@ -57,29 +73,28 @@ export default {
   methods: {
     addPost() {
       var newPost = {
-        title: "Title",
-        content: "Content"
+        text: "Text"
       };
 
       fetch("http://localhost:8080/posts", {
         method: "POST",
         headers: new Headers({
-          "Authorization": localStorage.token,
+          Authorization: localStorage.token,
           "Content-Type": "application/json"
         }),
         body: JSON.stringify(newPost)
       })
-      .then(response => response.json())
-      .then(data => {
-        var result = data;
-        result["isChanging"] = false;
-        result["titleSaved"] = "";
-        result["contentSaved"] = "";
-        return result;
-      })
-      .then(added => {
-        this.posts.unshift(added);
-      });
+        .then(response => response.json())
+        .then(data => {
+          var result = data;
+          result["isChanging"] = false;
+          result["titleSaved"] = "";
+          result["contentSaved"] = "";
+          return result;
+        })
+        .then(added => {
+          this.posts.unshift(added);
+        });
     },
     save(post) {
       post.isChanging = false;
@@ -87,20 +102,22 @@ export default {
       fetch("http://localhost:8080/posts", {
         method: "PUT",
         headers: new Headers({
-          "Authorization": localStorage.token,
+          Authorization: localStorage.token,
           "Content-Type": "application/json"
         }),
         body: JSON.stringify(post)
       })
-      .then(response => response.json())
-      .then(data => {
-        post.title = data.title;
-        post.content = data.content;
-      })
+        .then(response => response.json())
+        .then(data => {
+          post.id = data.id;
+          post.text = data.text;
+          post.image = data.image;
+        });
     },
     undo(post) {
       post.title = post.titleSaved;
       post.content = post.contentSaved;
+      post.image = post.imageSaved;
       post.titleSaved = "";
       post.contentSaved = "";
       post.isChanging = false;
@@ -108,30 +125,80 @@ export default {
     edit(post) {
       post.titleSaved = post.title;
       post.contentSaved = post.content;
+      post.imageSaved = post.image;
       post.isChanging = true;
     },
     remove(post) {
       fetch("http://localhost:8080/posts", {
         method: "DELETE",
         headers: new Headers({
-          "Authorization": localStorage.token,
+          Authorization: localStorage.token,
           "Content-Type": "application/json"
         }),
         body: JSON.stringify(post)
-      })
-      .then(response => {
+      }).then(response => {
         for (var i = 0; i < this.posts.length; i++) {
           if (this.posts[i].id === post.id) {
             this.posts.splice(i, 1);
           }
         }
+      });
+    },
+    onFileSelected(post, event) {
+      const formData = new FormData();
+      formData.append("file", event.target.files[0]);
+
+      fetch("http://localhost:8080/uploadFile", {
+        method: "POST",
+        headers: new Headers({
+          Authorization: localStorage.token
+        }),
+        body: formData
       })
+        .then(response => response.json())
+        .then(data => {
+          post.image = data;
+        });
     }
   }
 };
 </script>
 
 <style scoped>
+
+.imagePreview {
+  display: block;
+  width: 300px;
+  height: 200px;
+}
+
+.imagePreview img {
+  width: 100%;
+  height: 100%;
+}
+
+.file-select > .select-button {
+  padding: 1rem;
+  display: inline-block;
+  width: 300px;
+  box-sizing: border-box;
+
+  color: white;
+  background-color: #2EA169;
+
+  border-radius: .3rem;
+
+  text-align: center;
+  font-weight: bold;
+}
+
+/* Don't forget to hide the original file input! */
+.file-select > input[type="file"] {
+  display: none;
+}
+
+
+
 #header {
   display: block;
   font-size: 40px;
